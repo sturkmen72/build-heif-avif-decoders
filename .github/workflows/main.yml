@@ -1,0 +1,70 @@
+name: Buildm
+
+on:
+  push
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2019
+    
+    # Run a job for each of the specified target architectures:
+    strategy:
+      matrix:
+        arch:
+          - win64
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+      - name: Build
+        run: |
+          python3 -m pip install meson
+          mv nasm.exe C:/Windows/System32
+          git submodule update --init --recursive --depth 1 --recommend-shallow
+          cd dav1d
+          mkdir build
+          cd build
+          meson ..
+          ninja install
+          cd ../..
+          cd libde265
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A x64
+          msbuild.exe /p:Platform=x64 /p:configuration="Release" libde265.sln /t:de265
+          cp libde265/de265-version.h ../libde265
+          cd ../..
+          cd libheif
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A x64 -DLIBDE265_INCLUDE_DIR="../../libde265" -DLIBDE265_LIBRARY="../../libde265/build/libde265/Release/de265.lib" -DDAV1D_INCLUDE_DIR="c:/include" -DDAV1D_LIBRARY="c:/lib/dav1d.lib"
+          msbuild.exe /p:Platform=x64 /p:configuration="Release" libheif.sln /t:heif
+          cd ../..
+          cd libavif
+          mkdir build
+          cd build
+          cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DAVIF_CODEC_DAV1D=ON -DDAV1D_INCLUDE_DIR="c:/include" -DDAV1D_LIBRARY="c:/lib/dav1d.lib"
+          ninja
+      - name: moving
+        run: |
+          mkdir upload
+          mkdir upload/dav1d
+          mv c:/lib upload/dav1d
+          mv c:/include upload/dav1d
+          mv c:/bin upload/dav1d
+          mv libheif/build/libheif/Release/* upload
+          mv libde265/build/libde265/Release/* upload
+          mv libde265/build/libde265/de265-version.h upload
+          mv libheif/build/libheif/heif_version.h upload
+          mv libavif/build/avif.dll upload
+          mv libavif/build/avif.lib upload
+      - name: Upload output
+        uses: actions/upload-artifact@v3
+        with:
+          name: releaselibheif64
+          path: upload
+      # ...

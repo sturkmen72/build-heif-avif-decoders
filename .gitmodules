@@ -1,0 +1,12 @@
+[submodule "libde265"]
+	path = libde265
+	url = https://github.com/strukturag/libde265
+[submodule "libheif"]
+	path = libheif
+	url = https://github.com/strukturag/libheif
+[submodule "dav1d"]
+	path = dav1d
+	url = https://code.videolan.org/videolan/dav1d
+[submodule "libavif"]
+	path = libavif
+	url = https://github.com/AOMediaCodec/libavif
