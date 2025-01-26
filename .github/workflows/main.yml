@@ -49,6 +49,7 @@ jobs:
           cd build
           cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DAVIF_CODEC_DAV1D=SYSTEM -DAVIF_LIBYUV=OFF -DDAV1D_INCLUDE_DIR="c:/include" -DDAV1D_LIBRARY="c:/lib/dav1d.lib"
           ninja
+          set CMAKE_PREFIX_PATH="D:\a\build-heif-avif-decoders\build-heif-avif-decoders\libavif\build"
           cd ../..
           git clone --depth=1 --branch=avif_cmake https://github.com/sturkmen72/opencv.git
           git clone --depth=1 https://github.com/opencv/opencv_extra.git
